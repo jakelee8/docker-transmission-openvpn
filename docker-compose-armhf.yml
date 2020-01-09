@@ -2,14 +2,15 @@ version: '2'
 
 services:
  transmission:
-  build: 
-     context: .
-     dockerfile: Dockerfile.armhf
-  image: haugene/rpi-transmission-openvpn
-  privileged: true
+  image: haugene/transmission-openvpn:latest-armhf
+  cap_add:
+    - NET_ADMIN
+  devices:
+    - "/dev/net/tun"
   restart: always
   ports:
     - "9091:9091"
+    - "8888:8888"
   dns:
     - 8.8.8.8
     - 8.8.4.4
@@ -24,13 +25,17 @@ services:
     - LOCAL_NETWORK=192.168.0.0/24
 
  proxy:
-  build:
-     context: ./proxy
-     dockerfile: Dockerfile.armhf
-  image: haugene/rpi-transmission-openvpn-proxy
+  image: haugene/transmission-openvpn-proxy:latest-armhf
   links:
     - transmission
   ports:
     - "8080:8080"
   volumes:
     - /etc/localtime:/etc/localtime:ro
+
+ rss:
+  image: haugene/transmission-rss:latest-armhf
+  links:
+    - transmission
+  environment:
+    - RSS_URL=http://.../xxxxx.rss
